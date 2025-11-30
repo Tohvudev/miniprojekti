@@ -1,6 +1,9 @@
 # miniprojekti
 Haaga-Helian Palvelinten hallinta ICI001AS3A-3012 kurssin miniprojekti
 
+Tekijät:
+Erik V.
+Christoph R.
 
 Projektin tavoitteena on rakentaa kehitysympäristö, jossa kaksi virtuaalikonetta konfiguroidaan Saltin avulla:
 
