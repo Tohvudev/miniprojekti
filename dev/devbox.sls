@@ -9,6 +9,8 @@ vscode-server-install:
   cmd.run:
     - name: |
         curl -fsSL https://code-server.dev/install.sh | sh
+    - env:
+        HOME: /root
     - unless: which code-server
     - require:
       - pkg: curl
