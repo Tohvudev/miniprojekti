@@ -37,13 +37,14 @@ enable_sparse_checkout:
         git sparse-checkout set testwebpage/
     - unless: test -f /var/www/githubwebsite/.git/info/sparse-checkout
     - require:
-      - pkg: rsync
       - git: clone_repo
 copy_files:  #Copies contents of the "testwebpage" folder from your repo into apache default website folder.
   cmd.run:
-    - name: rsync -a --delete /var/www/githubwebsite/testwebpage/ /var/www/html
-    - onlyif: 'rsync -an --delete /var/www/githubwebsite/testwebpage/ /var/www/html/ | grep -q .'
+    - name: rsync -r --delete /var/www/githubwebsite/testwebpage/. /var/www/html
+    - onlyif: "test $(rsync -rni --delete /var/www/githubwebsite/testwebpage/. /var/www/html/ | wc -l) -gt 0"
     - require:
+      - cmd: enable_sparse_checkout
+      - pkg: rsync
       - git: clone_repo
 restart_apache: #Restarts apache
   service.running:
