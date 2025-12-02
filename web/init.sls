@@ -71,5 +71,5 @@ restart_apache: #Restarts apache
 make_cronjob_for_autorefresh: #Cronjob to execute a script that checks if the repo folder testwebpage is updated every 1 minute. If it is = it will download its contents and put it in /var/www/html
   cron.present:
     - name: /srv/salt/web/sync.sh
-    - user: root
+    - user: webuser
     - minute: "*/1"
