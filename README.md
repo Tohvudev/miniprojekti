@@ -231,4 +231,4 @@ restart_apache: #Restarts apache
 
 ```
 
-Tarkistaa onko joku muuttunu kansiossa "testwebpage" vai ei. Lataa ja päivittää /var/www/htmn sisältö jos on. Jos ei, mitään ei tapahdu.
+Tarkistaa onko joku muuttunu kansiossa "testwebpage" vai ei. Lataa reposta ja päivittää /var/www/htmn sisältö jos on jokin muuttunut. Jos ei, mitään ei tapahdu.
