@@ -53,7 +53,7 @@ restart_apache: #Restarts apache
       - git: clone_repo
     - require:
       - pkg: apache2
-/srv/salt/web/: #Puts the script in /web/sync.sh which cronjob runs
+/srv/salt/web/: #Puts the main init.sls for a full update (including pkg updates) in /web
   file.recurse:
     - source: salt://web/
     - user: webuser
@@ -61,8 +61,15 @@ restart_apache: #Restarts apache
     - makedirs: True
     - clean: True
     - file_mode: 555
+/srv/salt/sync/: #Puts the file that the script runs every minute in /sync (only checks if the repos folder "teswebpage" has been updated)
+  file.recurse:
+    - source: salt://sync/
+    - user: webuser
+    - group: www-data
+    - makedirs: True
+    - file_mode: 555
 make_cronjob_for_autorefresh: #Cronjob to execute a script that checks if the repo folder testwebpage is updated every 1 minute. If it is = it will download its contents and put it in /var/www/html
   cron.present:
-    - name: /srv/salt/web3/sync.sh
+    - name: /srv/salt/web/sync.sh
     - user: root
     - minute: "*/1"
