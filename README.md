@@ -109,7 +109,6 @@ web_user:  #Makes the webuser
     - name: webuser
     - groups:
       - www-data
-      - sudo
     - home: /home/webuser
     - shell: /bin/bash
 html_folder:  #Gives rights to make changes in the folder to the user "webuser" and the group "www-data"
@@ -168,7 +167,7 @@ restart_apache: #Restarts apache
 make_cronjob_for_autorefresh: #Cronjob to execute a script that checks if the repo folder testwebpage is updated every 1 minute. If it is = it will download its contents and put it in /var/www/html
   cron.present:
     - name: /srv/salt/web/sync.sh
-    - user: root
+    - user: webuser
     - minute: "*/1"
 ```
 
