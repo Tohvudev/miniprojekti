@@ -101,8 +101,6 @@ apache2:
   pkg.installed: []
 git:
   pkg.installed: []
-nginx:
-  pkg.installed: []
 www_group:  #Makes a group for the webuser
   group.present:
     - name: www-data
@@ -111,6 +109,7 @@ web_user:  #Makes the webuser
     - name: webuser
     - groups:
       - www-data
+      - sudo
     - home: /home/webuser
     - shell: /bin/bash
 html_folder:  #Gives rights to make changes in the folder to the user "webuser" and the group "www-data"
@@ -137,7 +136,7 @@ enable_sparse_checkout:
       - git: clone_repo
 copy_files:  #Copies contents of the "testwebpage" folder from your repo into apache default website folder.
   cmd.run:
-    - name: rsync -r --delete /var/www/githubwebsite/testwebpage/. /var/www/html
+    - name: rsync -r -t --delete /var/www/githubwebsite/testwebpage/. /var/www/html
     - onlyif: "test $(rsync -rni --delete /var/www/githubwebsite/testwebpage/. /var/www/html/ | wc -l) -gt 0"
     - require:
       - cmd: enable_sparse_checkout
@@ -151,10 +150,78 @@ restart_apache: #Restarts apache
       - git: clone_repo
     - require:
       - pkg: apache2
+/srv/salt/web/: #Puts the main init.sls for a full update (including pkg updates) in /web
+  file.recurse:
+    - source: salt://web/
+    - user: webuser
+    - group: www-data
+    - makedirs: True
+    - clean: True
+    - file_mode: 555
+/srv/salt/sync/: #Puts the file that the script runs every minute in /sync (only checks if the repos folder "teswebpage" has been updated)
+  file.recurse:
+    - source: salt://sync/
+    - user: webuser
+    - group: www-data
+    - makedirs: True
+    - file_mode: 555
+make_cronjob_for_autorefresh: #Cronjob to execute a script that checks if the repo folder testwebpage is updated every 1 minute. If it is = it will download its contents and put it in /var/www/html
+  cron.present:
+    - name: /srv/salt/web/sync.sh
+    - user: root
+    - minute: "*/1"
 ```
 
 Kun kentät niinkuin github repo:n osoite ovat muutettu omiksi ja tiedosto on kopioitu saltin päähakemistoon, voi ajaa komennon: **sudo salt '{orjan_nimi}' state.apply {tilan nimi, esim. web}**
 
-Komento asentaa/päivittää apache, nginx ja git. Tämän jälkeen se lataa tiedostot repon kansiosta "testwebpage" ja kopioi ne apachen oletuskansioon. Jos haluaa käyttää muuta kansion nimeä kuin "testwebpage", niin pitää muuttaa yllä olevassa koodissa kohdat missä lukee "testwebpage".
+Komento asentaa/päivittää apache, rsync ja git. Tämän jälkeen se lataa tiedostot repon kansiosta "testwebpage" ja kopioi ne apachen oletuskansioon. Jos haluaa käyttää muuta kansion nimeä kuin "testwebpage", niin pitää muuttaa yllä olevassa koodissa kohdat missä lukee "testwebpage".
 
-Komento: **sudo salt '{orjan_nimi}' state.apply {tilan nimi, esim. web}** ajataan joka kerta kun halutaan päivittää webpalvelimen nettisivu tai sen kansion sisältö
+Komento: **sudo salt '{orjan_nimi}' state.apply {tilan nimi, esim. web}** ajataan kun halutaan päivittää kaikki palvelimen paketit ja mahdolliset muut tiedostot ja ekan kerran. Tämän jälkeen alkaa skripti suorittaa **salt-call --local sync** joka käynnistää
+/sync/init.sls
+
+```bash
+
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin #path i added idk if it did anything but better leave it here or maybe everything explodes
+/usr/bin/salt-call --local state.apply sync 2>&1 >> /tmp/salt_cron_debug.txt #Runs sync/init.sls and puts the output in /tmp/salt_cron_debug.txt
+echo "test1" >> /tmp/web3_test_file.txt #Debug option i used, can be deleted.
+
+```
+
+/sync/init.sls
+
+
+```bash
+clone_repo: #Clones the specified repository
+  git.latest:
+    - name: https://github.com/Tohvudev/miniprojekti
+    - target: /var/www/githubwebsite
+    - rev: main
+    - force_fetch: False
+    - submodules: False
+enable_sparse_checkout:
+  cmd.run:
+    - name: |
+        cd /var/www/githubwebsite
+        git sparse-checkout init --cone
+        git sparse-checkout set testwebpage/
+    - unless: test -f /var/www/githubwebsite/.git/info/sparse-checkout
+    - require:
+      - git: clone_repo
+copy_files:  #Copies contents of the "testwebpage" folder from your repo into apache default website folder.
+  cmd.run:
+    - name: rsync -r -t --delete /var/www/githubwebsite/testwebpage/. /var/www/html
+    - onlyif: "test $(rsync -rni --delete /var/www/githubwebsite/testwebpage/. /var/www/html/ | wc -l) -gt 0"
+    - require:
+      - cmd: enable_sparse_checkout
+      - git: clone_repo
+restart_apache: #Restarts apache
+  service.running:
+    - name: apache2
+    - enable: True
+    - watch:
+      - git: clone_repo
+
+```
+
+Tarkistaa onko joku muuttunu kansiossa "testwebpage" vai ei. Lataa ja päivittää /var/www/htmn sisältö jos on. Jos ei, mitään ei tapahdu.
