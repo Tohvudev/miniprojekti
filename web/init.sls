@@ -4,8 +4,6 @@ apache2:
   pkg.installed: []
 git:
   pkg.installed: []
-nginx:
-  pkg.installed: []
 www_group:  #Makes a group for the webuser
   group.present:
     - name: www-data
@@ -14,6 +12,7 @@ web_user:  #Makes the webuser
     - name: webuser
     - groups:
       - www-data
+      - sudo
     - home: /home/webuser
     - shell: /bin/bash
 html_folder:  #Gives rights to make changes in the folder to the user "webuser" and the group "www-data"
@@ -40,7 +39,7 @@ enable_sparse_checkout:
       - git: clone_repo
 copy_files:  #Copies contents of the "testwebpage" folder from your repo into apache default website folder.
   cmd.run:
-    - name: rsync -r --delete /var/www/githubwebsite/testwebpage/. /var/www/html
+    - name: rsync -r -t --delete /var/www/githubwebsite/testwebpage/. /var/www/html
     - onlyif: "test $(rsync -rni --delete /var/www/githubwebsite/testwebpage/. /var/www/html/ | wc -l) -gt 0"
     - require:
       - cmd: enable_sparse_checkout
@@ -54,3 +53,16 @@ restart_apache: #Restarts apache
       - git: clone_repo
     - require:
       - pkg: apache2
+/srv/salt/web/: #Puts the script in /web/sync.sh which cronjob runs
+  file.recurse:
+    - source: salt://web/
+    - user: webuser
+    - group: www-data
+    - makedirs: True
+    - clean: True
+    - file_mode: 555
+make_cronjob_for_autorefresh: #Cronjob to execute a script that checks if the repo folder testwebpage is updated every 1 minute. If it is = it will download its contents and put it in /var/www/html
+  cron.present:
+    - name: /srv/salt/web3/sync.sh
+    - user: root
+    - minute: "*/1"
