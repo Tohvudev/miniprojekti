@@ -180,6 +180,10 @@ Komento asentaa/päivittää apache, rsync ja git. Tämän jälkeen se lataa tie
 Komento: **sudo salt '{orjan_nimi}' state.apply {tilan nimi, esim. web}** ajataan kun halutaan päivittää kaikki palvelimen paketit ja mahdolliset muut tiedostot ja ekan kerran. Tämän jälkeen alkaa skripti suorittaa **salt-call --local sync** joka käynnistää
 /sync/init.sls
 
+
+**/web/sync.sh**
+
+
 ```bash
 
 #!/bin/bash
@@ -189,7 +193,7 @@ echo "test1" >> /tmp/web3_test_file.txt #Debug option i used, can be deleted.
 
 ```
 
-/sync/init.sls
+**/sync/init.sls**
 
 
 ```bash
