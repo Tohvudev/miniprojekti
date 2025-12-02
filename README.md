@@ -95,6 +95,8 @@ Virtuaalikone Web asennetaan kopioimalla sen init.sls ja sync.sh tiedostot Salti
 JA Kopioimalla sen syncin init.sls tiedosto polkuun /srv/salt/sync/init.sls
 
 
+**srv/salt/web/init.sls**
+
 ```bash
 
 rsync:
@@ -181,7 +183,7 @@ Komento: **sudo salt '{orjan_nimi}' state.apply {tilan nimi, esim. web}** ajataa
 /sync/init.sls
 
 
-**/web/sync.sh**
+**srv/salt/web/sync.sh**
 
 
 ```bash
@@ -193,7 +195,7 @@ echo "test1" >> /tmp/web3_test_file.txt #Debug option i used, can be deleted.
 
 ```
 
-**/sync/init.sls**
+**srv/salt/sync/init.sls**
 
 
 ```bash
