@@ -91,7 +91,9 @@ Tiedoston ajaminen asentaa gitin versionhallintaa varten, curlin jos sit채 ei l�
 
 ### Web-Palvelin
 
-Virtuaalikone Web asennetaan kopioimalla sen init.sls tiedosto Saltin p채채hakemistoon. Esim: /srv/salt/web/init.sls
+Virtuaalikone Web asennetaan kopioimalla sen init.sls ja sync.sh tiedostot Saltin p채채hakemistoon. /srv/salt/web/init.sls
+JA Kopioimalla sen syncin init.sls tiedosto polkuun /srv/salt/sync/init.sls
+
 
 ```bash
 
